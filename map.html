@@ -201,7 +201,8 @@ function calculateRouteFromAtoB (platform) {
  */
 function onSuccess(result) {
   var route = result.response.route[0];
-  console.log(route);
+  var coords = transformCoordinates(route.shape);
+  getAltitude(coords);
  /*
   * The styling of the route response on the map is entirely under the developer's control.
   * A representitive styling can be found the full JS + HTML code of this example
@@ -442,29 +443,35 @@ Number.prototype.toMMSS = function () {
 
 // Now use the map as required...
 
-arr = []
-for (var i = 1; i <= 50; i++) {
-   arr.push(
-    {
-      "latitude": 45,
-      "longitude": 42
-    },
-  );
+
+function transformCoordinates(coordinates){
+  //here we go
+  diluted = [];
+  if (coordinates.length > 30) {
+    ratio = coordinates.length/30;
+    for (var i = 0; i < 30; i++) {
+      diluted.push(coordinates[Math.floor(i*ratio)])
+    }
+  } else {
+    diluted = diluted = coordinates;
+  }
+  console.log(coordinates.length, diluted.length);
+  return diluted.map(coord => coord.split(',').map(x => parseFloat(x)))
+  .map(val => ({"latitude": val[0], "longitude": val[1]}));
 }
-var data = {
-  "locations": arr
+
+function getAltitude(coordinates){
+  console.log(coordinates);
+  var request = {"locations": coordinates};
+  axios.post('https://api.open-elevation.com/api/v1/lookup', request)
+    .then(function (response) {
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
 }
-console.log(data);
-axios.post('https://api.open-elevation.com/api/v1/lookup', data)
-  .then(function (response) {
-    console.log(response);
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
 calculateRouteFromAtoB (platform);
-
-
   </script>
 </body>
 </html>
