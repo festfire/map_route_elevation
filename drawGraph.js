@@ -26,7 +26,7 @@ function drawGraph(canvas, data, distance) {
 		}
 		if (i > 0) {
 			var angle = Math.atan2(item.alt - lastAlt, distance / data.length);
-			colors.push(Math.abs(angle) > 1 ? (angle >= 0 ? 1 : -1) : 0);
+			colors.push(Math.abs(angle) > .02 ? (angle >= 0 ? 1 : -1) : 0);
 		}
 		lastAlt = item.alt;
 	});
@@ -71,7 +71,7 @@ function drawGraph(canvas, data, distance) {
 
 	var lowScale = min - (max - min) * .2;
 	var highScale = max + (max - min) * .2;
-	var minDist = 200;
+	var minDist = 300;
 	lowScale = Math.max(0, lowScale);
 
 	if (highScale - lowScale < minDist) {
