@@ -51,6 +51,10 @@ function drawGraph(data, distance) {
 	    // Configuration options go here
 	    options: {
 	    	responsive: true,
+	    	maintainAspectRatio: false,
+	    	legend: {
+	    		display: false,
+	    	},
 	    	title: {
 	    		display: false,
 	    		text: 'Altitude profile'
