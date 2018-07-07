@@ -16,7 +16,7 @@
   width:60px;
   height:60px;
   border-radius:100%;
-  background:#000000;
+  background:#222222;
   border:none;
   outline:none;
   color:#FFF;
@@ -27,6 +27,8 @@
 }
 
 </style>
+    <!-- Bootstrap core CSS -->
+    <link href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
   <button 
@@ -34,8 +36,16 @@
     style="position:absolute; right:0%; z-index:1001; margin:10px"
     class="kc_fab_main_btn"
     onclick="onClose()">x</button>
-  <div id="map" style="position:absolute; width:99%; height:68%; background:grey" ></div>
-  <div style="position:absolute; top:70%; width:99%; height:28%"><canvas id="canvas" ></canvas></div>
+  <div id="map" style="position:absolute; width:100%; height:68%; background:grey" ></div>
+  <div style="position:absolute; top:70%; width:100%; height:28%"><canvas id="canvas" ></canvas></div>
+      <div class="form-label-group" style="position:absolute; right:70px; z-index:1001; margin:10px">
+        <input type="text" id="start" class="form-control" placeholder="Start" required="" autofocus="">
+        <input type="text" id="start" class="form-control" placeholder="Start" required="" autofocus="">
+        <button class="btn btn-md btn-dark btn-block" type="submit">Find route</button>
+      </div>
+
+
+
   <script  type="text/javascript" charset="UTF-8" >
 
 
@@ -51,7 +61,7 @@
 function calculateRouteFromAtoB (platform, routeCoords) {
   var router = platform.getRoutingService(),
     routeRequestParams = {
-      mode: 'fastest;car',
+      mode: 'fastest;bicycle',
       representation: 'display',
       routeattributes : 'waypoints,summary,shape,legs',
       maneuverattributes: 'direction,action',
@@ -90,7 +100,7 @@ function onSuccess(result) {
  * @param  {Object} error  The error message received.
  */
 function onError(error) {
-  alert('Ooops!');
+  alert(error);
 }
 
 function onClose() {
@@ -110,8 +120,8 @@ var mapContainer = document.getElementById('map');
 
 //Step 1: initialize communication with the platform
 var platform = new H.service.Platform({
-  app_id: 'DemoAppId01082013GAL',
-  app_code: 'AJKnXv84fjrb0KIHawS0Tg',
+  app_id: '96PJb3nTpHdfeQwLoZte',
+  app_code: 'ktn82MWS8-C43_ZRWs2QXA',
   useCIT: true,
   useHTTPS: true
 });
@@ -132,6 +142,9 @@ var map = new H.Map(mapContainer,
 var tapCounter = 0;
 var routeCoords = [0,0];
 lines = [];
+var myLocation = [45,42];
+
+
 map.addEventListener('tap', function (evt) {
   var coord = map.screenToGeo(evt.currentPointer.viewportX,
             evt.currentPointer.viewportY);
@@ -184,6 +197,34 @@ function addRouteShapeToMap(route){
   // And zoom to its bounding rectangle
   map.setViewBounds(polyline.getBounds(), true);
 }
+
+geocode(platform, 'Stavropol, ul. Dovatorcev d7');
+
+function geocode(platform, text) {
+  var geocoder = platform.getGeocodingService(),
+    geocodingParameters = {
+      searchText: text,
+      jsonattributes : 1
+    };
+
+  geocoder.geocode(
+    geocodingParameters,
+    onGeocodeSuccess,
+    onError
+  );
+}
+
+function onGeocodeSuccess(result) {
+  var locations = result.response.view[0].result;
+ /*
+  * The styling of the geocoding response on the map is entirely under the developer's control.
+  * A representitive styling can be found the full JS + HTML code of this example
+  * in the functions below:
+  */
+  console.log(locations);
+}
+
+
 function removeObjectById(id){
    for (object of map.getObjects()){
     if (object.id===id){
