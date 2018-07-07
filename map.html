@@ -8,6 +8,8 @@
 <script type="text/javascript" src="https://js.cit.api.here.com/v3/3.0/mapsjs-ui.js"></script>
 <script type="text/javascript" src="https://js.cit.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="Chart.bundle.min.js"></script>
+<script src="drawGraph.js"></script>
 <style type="text/css">
 .directions li span.arrow {
   display:inline-block;
@@ -161,9 +163,9 @@
 </head>
 <body>
 
-  <div id="map" style="position:absolute; width:49%; height:100%; background:grey" ></div>
-  <div id="panel" style="position:absolute; width:49%; left:51%; height:100%; background:inherit" ></div>
-
+  <div id="map" style="position:absolute; width:100%; height:70%; background:grey" ></div>
+  <div id="panel" style="position:absolute; width:0%; left:51%; height:100%; background:inherit" ></div>
+  <div style="position:absolute; top:70%; width:100%; height:29%"><canvas id="canvas" ></canvas></div>
   <script  type="text/javascript" charset="UTF-8" >
     
 
@@ -446,7 +448,7 @@ Number.prototype.toMMSS = function () {
 
 function transformCoordinates(coordinates){
   //here we go
-  diluted = [];
+  var diluted = [];
   if (coordinates.length > 30) {
     ratio = coordinates.length/30;
     for (var i = 0; i < 30; i++) {
@@ -455,23 +457,24 @@ function transformCoordinates(coordinates){
   } else {
     diluted = diluted = coordinates;
   }
-  console.log(coordinates.length, diluted.length);
   return diluted.map(coord => coord.split(',').map(x => parseFloat(x)))
   .map(val => ({"latitude": val[0], "longitude": val[1]}));
 }
 
 function getAltitude(coordinates){
-  console.log(coordinates);
   var request = {"locations": coordinates};
   axios.post('https://api.open-elevation.com/api/v1/lookup', request)
     .then(function (response) {
       console.log(response);
+      var data = response.data.results.map(coord => ({'alt': coord.elevation}));
+      console.log(data);
+      drawGraph(data, 100);
     })
     .catch(function (error) {
       console.log(error);
     });
 }
-calculateRouteFromAtoB (platform);
+calculateRouteFromAtoB(platform);
   </script>
 </body>
 </html>
