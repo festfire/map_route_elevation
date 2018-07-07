@@ -10,162 +10,12 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="Chart.bundle.min.js"></script>
 <script src="drawGraph.js"></script>
-<style type="text/css">
-.directions li span.arrow {
-  display:inline-block;
-  min-width:28px;
-  min-height:28px;
-  background-position:0px;
-  background-image: url("../img/arrows.png");
-  position:relative;
-  top:8px;
-}
-.directions li span.depart  {
-  background-position:-28px;
-}
-.directions li span.rightUTurn  {
-  background-position:-56px;
-}
-.directions li span.leftUTurn  {
-  background-position:-84px;
-}
-.directions li span.rightFork  {
-  background-position:-112px;
-}
-.directions li span.leftFork  {
-  background-position:-140px;
-}
-.directions li span.rightMerge  {
-  background-position:-112px;
-}
-.directions li span.leftMerge  {
-  background-position:-140px;
-}
-.directions li span.slightRightTurn  {
-  background-position:-168px;
-}
-.directions li span.slightLeftTurn{
-  background-position:-196px;
-}
-.directions li span.rightTurn  {
-  background-position:-224px;
-}
-.directions li span.leftTurn{
-  background-position:-252px;
-}
-.directions li span.sharpRightTurn  {
-  background-position:-280px;
-}
-.directions li span.sharpLeftTurn{
-  background-position:-308px;
-}
-.directions li span.rightRoundaboutExit1 {
-  background-position:-616px;
-}
-.directions li span.rightRoundaboutExit2 {
-  background-position:-644px;
-}
-
-.directions li span.rightRoundaboutExit3 {
-  background-position:-672px;
-}
-
-.directions li span.rightRoundaboutExit4 {
-  background-position:-700px;
-}
-
-.directions li span.rightRoundaboutPass {
-  background-position:-700px;
-}
-
-.directions li span.rightRoundaboutExit5 {
-  background-position:-728px;
-}
-.directions li span.rightRoundaboutExit6 {
-  background-position:-756px;
-}
-.directions li span.rightRoundaboutExit7 {
-  background-position:-784px;
-}
-.directions li span.rightRoundaboutExit8 {
-  background-position:-812px;
-}
-.directions li span.rightRoundaboutExit9 {
-  background-position:-840px;
-}
-.directions li span.rightRoundaboutExit10 {
-  background-position:-868px;
-}
-.directions li span.rightRoundaboutExit11 {
-  background-position:896px;
-}
-.directions li span.rightRoundaboutExit12 {
-  background-position:924px;
-}
-.directions li span.leftRoundaboutExit1  {
-  background-position:-952px;
-}
-.directions li span.leftRoundaboutExit2  {
-  background-position:-980px;
-}
-.directions li span.leftRoundaboutExit3  {
-  background-position:-1008px;
-}
-.directions li span.leftRoundaboutExit4  {
-  background-position:-1036px;
-}
-.directions li span.leftRoundaboutPass {
-  background-position:1036px;
-}
-.directions li span.leftRoundaboutExit5  {
-  background-position:-1064px;
-}
-.directions li span.leftRoundaboutExit6  {
-  background-position:-1092px;
-}
-.directions li span.leftRoundaboutExit7  {
-  background-position:-1120px;
-}
-.directions li span.leftRoundaboutExit8  {
-  background-position:-1148px;
-}
-.directions li span.leftRoundaboutExit9  {
-  background-position:-1176px;
-}
-.directions li span.leftRoundaboutExit10  {
-  background-position:-1204px;
-}
-.directions li span.leftRoundaboutExit11  {
-  background-position:-1232px;
-}
-.directions li span.leftRoundaboutExit12  {
-  background-position:-1260px;
-}
-.directions li span.arrive  {
-  background-position:-1288px;
-}
-.directions li span.leftRamp  {
-  background-position:-392px;
-}
-.directions li span.rightRamp  {
-  background-position:-420px;
-}
-.directions li span.leftExit  {
-  background-position:-448px;
-}
-.directions li span.rightExit  {
-  background-position:-476px;
-}
-
-.directions li span.ferry  {
-  background-position:-1316px;
-</style>
 </head>
 <body>
 
-  <div id="map" style="position:absolute; width:100%; height:70%; background:grey" ></div>
-  <div id="panel" style="position:absolute; width:0%; left:51%; height:100%; background:inherit" ></div>
-  <div style="position:absolute; top:70%; width:100%; height:29%"><canvas id="canvas" ></canvas></div>
+  <div id="map" style="position:absolute; width:99%; height:70%; background:grey" ></div>
+  <div id="panel" style="position:absolute; width:0%; left:51%; height:0%; background:inherit" ></div>
+  <div style="position:absolute; top:70%; width:99%; height:29%"><canvas id="canvas" ></canvas></div>
   <script  type="text/javascript" charset="UTF-8" >
     
 
@@ -178,15 +28,15 @@
  *
  * @param   {H.service.Platform} platform    A stub class to access HERE services
  */
-function calculateRouteFromAtoB (platform) {
+function calculateRouteFromAtoB (platform, routeCoords) {
   var router = platform.getRoutingService(),
     routeRequestParams = {
       mode: 'fastest;car',
       representation: 'display',
       routeattributes : 'waypoints,summary,shape,legs',
       maneuverattributes: 'direction,action',
-      waypoint0: '45.04,42.079', // Brandenburg Gate
-      waypoint1: '45.2206,42.3862'  // Friedrichstraße Railway Station
+      waypoint0: routeCoords[0], // Brandenburg Gate
+      waypoint1: routeCoords[1]  // Friedrichstraße Railway Station
     };
 
   router.calculateRoute(
@@ -211,7 +61,7 @@ function onSuccess(result) {
   * in the functions below:
   */
   addRouteShapeToMap(route);
-  addManueversToMap(route);
+  //addManueversToMap(route);
 
   // addWaypointsToPanel(route.waypoint);
   // addManueversToPanel(route);
@@ -254,9 +104,33 @@ var defaultLayers = platform.createDefaultLayers({
 //Step 2: initialize a map - this map is centered over Berlin
 var map = new H.Map(mapContainer,
   defaultLayers.normal.map,{
-  center: {lat:52.5160, lng:13.3779},
-  zoom: 13,
+  center: {lat:45.05, lng:41.95},
+  zoom: 12,
   pixelRatio: pixelRatio
+});
+
+var tapCounter = 0;
+var routeCoords = [0,0];
+map.addEventListener('tap', function (evt) {
+  var coord = map.screenToGeo(evt.currentPointer.viewportX,
+            evt.currentPointer.viewportY);
+  if (tapCounter === 0) {
+    routeCoords[0] = coord.lat.toString()+','+coord.lng.toString();
+  } else if (tapCounter === 1) {
+    routeCoords[1] = coord.lat.toString()+','+coord.lng.toString();
+    console.log(routeCoords);
+    calculateRouteFromAtoB(platform, routeCoords);
+    
+  }
+  tapCounter += 1;
+  console.log(tapCounter);
+});
+map.addEventListener('dbltap', function (evt) {
+  var coord = map.screenToGeo(evt.currentPointer.viewportX,
+            evt.currentPointer.viewportY);
+  console.log('dbltab');
+  tapCounter = 0;
+  console.log(map.getLayers());
 });
 
 //Step 3: make the map interactive
@@ -458,11 +332,11 @@ function transformCoordinates(coordinates){
     diluted = diluted = coordinates;
   }
   return diluted.map(coord => coord.split(',').map(x => parseFloat(x)))
-  .map(val => ({"latitude": val[0], "longitude": val[1]}));
+  .map(val => ({'latitude': val[0], 'longitude': val[1]}));
 }
 
 function getAltitude(coordinates){
-  var request = {"locations": coordinates};
+  var request = {'locations': coordinates};
   axios.post('https://api.open-elevation.com/api/v1/lookup', request)
     .then(function (response) {
       console.log(response);
@@ -474,7 +348,7 @@ function getAltitude(coordinates){
       console.log(error);
     });
 }
-calculateRouteFromAtoB(platform);
+
   </script>
 </body>
 </html>
