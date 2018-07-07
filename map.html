@@ -10,14 +10,34 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="Chart.bundle.min.js"></script>
 <script src="drawGraph.js"></script>
+<style>
+.kc_fab_main_btn{
+  background-color:#F44336;
+  width:60px;
+  height:60px;
+  border-radius:100%;
+  background:#000000;
+  border:none;
+  outline:none;
+  color:#FFF;
+  font-size:24px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  transition:.3s;  
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+</style>
 </head>
 <body>
-
-  <div id="map" style="position:absolute; width:99%; height:70%; background:grey" ></div>
-  <div id="panel" style="position:absolute; width:0%; left:51%; height:0%; background:inherit" ></div>
-  <div style="position:absolute; top:70%; width:99%; height:29%"><canvas id="canvas" ></canvas></div>
+  <button 
+    id="start"
+    style="position:absolute; right:0%; z-index:1001; margin:10px"
+    class="kc_fab_main_btn"
+    onclick="onClose()">x</button>
+  <div id="map" style="position:absolute; width:99%; height:68%; background:grey; margin:5px" ></div>
+  <div style="position:absolute; top:70%; width:99%; height:28%; margin:5px"><canvas id="canvas" ></canvas></div>
   <script  type="text/javascript" charset="UTF-8" >
-    
+
 
 /**
  * Calculates and displays a car route from the Brandenburg Gate in the centre of Berlin
@@ -35,8 +55,8 @@ function calculateRouteFromAtoB (platform, routeCoords) {
       representation: 'display',
       routeattributes : 'waypoints,summary,shape,legs',
       maneuverattributes: 'direction,action',
-      waypoint0: routeCoords[0], // Brandenburg Gate
-      waypoint1: routeCoords[1]  // Friedrichstraße Railway Station
+      waypoint0: routeCoords[0], 
+      waypoint1: routeCoords[1] 
     };
 
   router.calculateRoute(
@@ -54,7 +74,7 @@ function calculateRouteFromAtoB (platform, routeCoords) {
 function onSuccess(result) {
   var route = result.response.route[0];
   var coords = transformCoordinates(route.shape);
-  getAltitude(coords);
+  getAltitude(coords, route.summary.distance);
  /*
   * The styling of the route response on the map is entirely under the developer's control.
   * A representitive styling can be found the full JS + HTML code of this example
@@ -77,6 +97,11 @@ function onError(error) {
   alert('Ooops!');
 }
 
+function onClose() {
+  removeObjectById('route');
+  //document.getElementById('map').style="position:absolute; width:99%; height:99%; z-index:90; background:grey"
+  tapCounter = 0;
+}
 
 
 
@@ -85,8 +110,7 @@ function onError(error) {
  */
 
 // set up containers for the map  + panel
-var mapContainer = document.getElementById('map'),
-  routeInstructionsContainer = document.getElementById('panel');
+var mapContainer = document.getElementById('map');
 
 //Step 1: initialize communication with the platform
 var platform = new H.service.Platform({
@@ -111,6 +135,7 @@ var map = new H.Map(mapContainer,
 
 var tapCounter = 0;
 var routeCoords = [0,0];
+lines = [];
 map.addEventListener('tap', function (evt) {
   var coord = map.screenToGeo(evt.currentPointer.viewportX,
             evt.currentPointer.viewportY);
@@ -120,17 +145,9 @@ map.addEventListener('tap', function (evt) {
     routeCoords[1] = coord.lat.toString()+','+coord.lng.toString();
     console.log(routeCoords);
     calculateRouteFromAtoB(platform, routeCoords);
-    
   }
   tapCounter += 1;
   console.log(tapCounter);
-});
-map.addEventListener('dbltap', function (evt) {
-  var coord = map.screenToGeo(evt.currentPointer.viewportX,
-            evt.currentPointer.viewportY);
-  console.log('dbltab');
-  tapCounter = 0;
-  console.log(map.getLayers());
 });
 
 //Step 3: make the map interactive
@@ -142,26 +159,26 @@ var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 var ui = H.ui.UI.createDefault(map, defaultLayers);
 
 // Hold a reference to any infobubble opened
-var bubble;
+// var bubble;
 
 /**
  * Opens/Closes a infobubble
  * @param  {H.geo.Point} position     The location on the map.
  * @param  {String} text              The contents of the infobubble.
  */
-function openBubble(position, text){
- if(!bubble){
-    bubble =  new H.ui.InfoBubble(
-      position,
-      // The FO property holds the province name.
-      {content: text});
-    ui.addBubble(bubble);
-  } else {
-    bubble.setPosition(position);
-    bubble.setContent(text);
-    bubble.open();
-  }
-}
+// function openBubble(position, text){
+//  if(!bubble){
+//     bubble =  new H.ui.InfoBubble(
+//       position,
+//       // The FO property holds the province name.
+//       {content: text});
+//     ui.addBubble(bubble);
+//   } else {
+//     bubble.setPosition(position);
+//     bubble.setContent(text);
+//     bubble.open();
+//   }
+// }
 
 
 /**
@@ -184,52 +201,59 @@ function addRouteShapeToMap(route){
       strokeColor: 'rgba(0, 128, 255, 0.7)'
     }
   });
+  polyline.id = "route";
   // Add the polyline to the map
   map.addObject(polyline);
   // And zoom to its bounding rectangle
   map.setViewBounds(polyline.getBounds(), true);
 }
-
+function removeObjectById(id){
+   for (object of map.getObjects()){
+    if (object.id===id){
+        map.removeObject(object);
+        }
+    }
+}
 
 /**
  * Creates a series of H.map.Marker points from the route and adds them to the map.
  * @param {Object} route  A route as received from the H.service.RoutingService
  */
-function addManueversToMap(route){
-  var svgMarkup = '<svg width="18" height="18" ' +
-    'xmlns="http://www.w3.org/2000/svg">' +
-    '<circle cx="8" cy="8" r="8" ' +
-      'fill="#1b468d" stroke="white" stroke-width="1"  />' +
-    '</svg>',
-    dotIcon = new H.map.Icon(svgMarkup, {anchor: {x:8, y:8}}),
-    group = new  H.map.Group(),
-    i,
-    j;
+// function addManueversToMap(route){
+//   var svgMarkup = '<svg width="18" height="18" ' +
+//     'xmlns="http://www.w3.org/2000/svg">' +
+//     '<circle cx="8" cy="8" r="8" ' +
+//       'fill="#1b468d" stroke="white" stroke-width="1"  />' +
+//     '</svg>',
+//     dotIcon = new H.map.Icon(svgMarkup, {anchor: {x:8, y:8}}),
+//     group = new  H.map.Group(),
+//     i,
+//     j;
 
-  // Add a marker for each maneuver
-  for (i = 0;  i < route.leg.length; i += 1) {
-    for (j = 0;  j < route.leg[i].maneuver.length; j += 1) {
-      // Get the next maneuver.
-      maneuver = route.leg[i].maneuver[j];
-      // Add a marker to the maneuvers group
-      var marker =  new H.map.Marker({
-        lat: maneuver.position.latitude,
-        lng: maneuver.position.longitude} ,
-        {icon: dotIcon});
-      marker.instruction = maneuver.instruction;
-      group.addObject(marker);
-    }
-  }
+//   // Add a marker for each maneuver
+//   for (i = 0;  i < route.leg.length; i += 1) {
+//     for (j = 0;  j < route.leg[i].maneuver.length; j += 1) {
+//       // Get the next maneuver.
+//       maneuver = route.leg[i].maneuver[j];
+//       // Add a marker to the maneuvers group
+//       var marker =  new H.map.Marker({
+//         lat: maneuver.position.latitude,
+//         lng: maneuver.position.longitude} ,
+//         {icon: dotIcon});
+//       marker.instruction = maneuver.instruction;
+//       group.addObject(marker);
+//     }
+//   }
 
-  group.addEventListener('tap', function (evt) {
-    map.setCenter(evt.target.getPosition());
-    openBubble(
-       evt.target.getPosition(), evt.target.instruction);
-  }, false);
+//   group.addEventListener('tap', function (evt) {
+//     map.setCenter(evt.target.getPosition());
+//     openBubble(
+//        evt.target.getPosition(), evt.target.instruction);
+//   }, false);
 
-  // Add the maneuvers group to the map
-  map.addObject(group);
-}
+//   // Add the maneuvers group to the map
+//   map.addObject(group);
+// }
 
 
 /**
@@ -313,9 +337,9 @@ function addManueversToMap(route){
 // }
 
 
-Number.prototype.toMMSS = function () {
-  return  Math.floor(this / 60)  +' minutes '+ (this % 60)  + ' seconds.';
-}
+// Number.prototype.toMMSS = function () {
+//   return  Math.floor(this / 60)  +' minutes '+ (this % 60)  + ' seconds.';
+// }
 
 // Now use the map as required...
 
@@ -335,14 +359,14 @@ function transformCoordinates(coordinates){
   .map(val => ({'latitude': val[0], 'longitude': val[1]}));
 }
 
-function getAltitude(coordinates){
+function getAltitude(coordinates, distance){
   var request = {'locations': coordinates};
   axios.post('https://api.open-elevation.com/api/v1/lookup', request)
     .then(function (response) {
-      console.log(response);
       var data = response.data.results.map(coord => ({'alt': coord.elevation}));
-      console.log(data);
-      drawGraph(data, 100);
+      drawGraph(data, distance);
+      console.log('redraw');
+      //document.getElementById('map').style="position:absolute; width:99%; height:70%; z-index:10;";
     })
     .catch(function (error) {
       console.log(error);
