@@ -1,4 +1,4 @@
-function test(data, distance) {
+function drawGraph(data, distance) {
 	/*var data = [
 		{alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, 
 	]*/;
