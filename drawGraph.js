@@ -84,88 +84,75 @@ function drawGraph(canvas, data, distance) {
 		lowScale = 0;
 	}
 
-	var img = new Image();
-	
-	var fillPattern;
-	img.onload = function() {
-		fillPattern = ctx.createPattern(img, 'repeat');
+	var chart = new Chart(ctx, {
+	    // The type of chart we want to create
+	    type: 'line',
 
-		var chart = new Chart(ctx, {
-		    // The type of chart we want to create
-		    type: 'line',
+	    // The data for our dataset
+	    data: {
+	        labels: labels,//["January", "February", "March", "April", "May", "June", "July"],
+	        datasets: [{
+	            label: "Going down",
+		        backgroundColor: 'rgb(199, 255, 199)',
+	            borderColor: 'rgb(99, 255, 99)',
+	            lineTension: 0,
+	            data: altDataDown,
+	        },
+	        {
+	            label: "Going flat",
+		        backgroundColor: 'rgb(232, 199, 255)',
+	            borderColor: 'rgb(132, 99, 255)',
+	            lineTension: 0,
+	            data: altDataFlat,
+	        },
+	        {
+	            label: "Going up",
+		        backgroundColor: 'rgb(255, 199, 199)',
+	            borderColor: 'rgb(255, 99, 99)',
+	            lineTension: 0,
+	            data: altDataUp,
+	        },
+	        ]
+	    },
 
-		    // The data for our dataset
-		    data: {
-		        labels: labels,//["January", "February", "March", "April", "May", "June", "July"],
-		        datasets: [{
-		            label: "Going down",
-			        backgroundColor: 'rgb(199, 255, 199)',
-		            borderColor: 'rgb(99, 255, 99)',
-		            lineTension: 0,
-		            data: altDataDown,
-		        },
-		        {
-		            label: "Going flat",
-			        backgroundColor: 'rgb(232, 199, 255)',
-		            borderColor: 'rgb(132, 99, 255)',
-		            lineTension: 0,
-		            data: altDataFlat,
-		        },
-		        {
-		            label: "Going up",
-			        backgroundColor: 'rgb(255, 199, 199)',
-		            borderColor: 'rgb(255, 99, 99)',
-		            lineTension: 0,
-		            data: altDataUp,
-		        },
-		        ]
-		    },
+	    // Configuration options go here
+	    options: {
+	    	responsive: true,
+	    	maintainAspectRatio: false,
+	    	legend: {
+	    		display: false,
+	    	},
+	    	title: {
+	    		display: false,
+	    		text: 'Altitude profile'
+	    	},
+	    	scales: {
+	    		yAxes: [{
+	    			ticks: {
+	    				min: lowScale,
+	    				max: highScale,
+	    			},
+	    			scaleLabel: {
+		    			display: true,
+		    			labelString: 'Altitude, m',
+		    			fontStyle: 'bold',
+		    			fontSize: 16
+		    		}
+	    		}],
+	    		xAxes: [{
+	    			ticks: {
+	    				stepSize: 5
+	    			},
+	    			scaleLabel: {
+		    			display: true,
+		    			labelString: 'Distance, m',
+		    			fontStyle: 'bold',
+		    			fontSize: 16
+		    		}
+	    		}],
+	    	}
+	    }
+	});
 
-		    // Configuration options go here
-		    options: {
-		    	responsive: true,
-		    	maintainAspectRatio: false,
-		    	legend: {
-		    		display: false,
-		    	},
-		    	title: {
-		    		display: false,
-		    		text: 'Altitude profile'
-		    	},
-		    	scales: {
-		    		yAxes: [{
-		    			ticks: {
-		    				min: lowScale,
-		    				max: highScale,
-		    			},
-		    			scaleLabel: {
-			    			display: true,
-			    			labelString: 'Altitude, m',
-			    			fontStyle: 'bold',
-			    			fontSize: 16
-			    		}
-		    		}],
-		    		xAxes: [{
-		    			ticks: {
-		    				stepSize: 5
-		    			},
-		    			scaleLabel: {
-			    			display: true,
-			    			labelString: 'Distance, m',
-			    			fontStyle: 'bold',
-			    			fontSize: 16
-			    		}
-		    		}],
-		    	}
-		    }
-		});
-/*
-		setTimeout(function() {
-			ctx.fillStyle = "rgba(0, 255, 0, .25)";
-			ctx.fillRect(0, 0, 100, 100);
-		}, 1000);*/
-	};
-
-	img.src = 'test.png';
 	
 }
