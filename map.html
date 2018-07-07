@@ -364,7 +364,7 @@ function getAltitude(coordinates, distance){
   axios.post('https://api.open-elevation.com/api/v1/lookup', request)
     .then(function (response) {
       var data = response.data.results.map(coord => ({'alt': coord.elevation}));
-      drawGraph(data, distance);
+      drawGraph(document.getElementById('canvas').getContext('2d'), data, distance);
       console.log('redraw');
       //document.getElementById('map').style="position:absolute; width:99%; height:70%; z-index:10;";
     })
