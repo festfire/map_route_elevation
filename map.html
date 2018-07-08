@@ -9,7 +9,7 @@
 <script type="text/javascript" src="https://js.cit.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="Chart.bundle.min.js"></script>
-<!--<script src="jquery.js"></script>-->
+<script src="jquery.js"></script>
 <script src="drawGraph.js"></script>
 <style>
 .kc_fab_main_btn{
@@ -32,23 +32,69 @@
     <link href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  <div id="map" style="position:absolute; width:100%; height:100%; background:grey" ></div>
-  <div style="position:absolute; top:70%; width:100%; height:28%; background:white; "><canvas id="canvas0" ></canvas></div>
-      <div class="form-label-group" style="position:absolute; right:0; z-index:1001; margin:10px">
-        <input type="text" id="startText" class="form-control" placeholder="Start" required="" autofocus="">
-        <input type="text" id="endText" class="form-control" placeholder="Destination" required="" autofocus="">
-        <button class="btn btn-md btn-dark btn-block" onclick="findOrClear()">Find route</button>
-      </div>
+  <div id="map" style="position:absolute; width:100%; height:100%; background:white" ></div>
+  <div class="graph" id="graph" style="position:absolute; top:100%; width:100%; height:0%; background:white; "><img id="anim" src="2.gif" style="display:block; margin-left:auto; margin-right:auto; margin-top: 90px" /><canvas id="canvas0" ></canvas></div>
+  <div class="graph" id="graph1" style="position:absolute; top:50%; width:100%; height:0%; background:white; "><canvas id="canvas1" ></canvas></div>
+  <div class="graph" id="graph2" style="position:absolute; top:25%; width:100%; height:0%; background:white; "><canvas id="canvas2" ></canvas></div>
+  <div class="graph" id="graph3" style="position:absolute; top:0%; width:100%; height:0%; background:white; "><canvas id="canvas3" ></canvas></div>
+  <div id="address" class="form-label-group" style="position:absolute; right:0; z-index:1001; margin:10px">
+    <input type="text" id="startText" class="form-control" placeholder="Откуда" required="" autofocus="">
+    <input type="text" id="endText" class="form-control" placeholder="Куда" required="" autofocus="">
+    <button class="btn btn-md btn-dark btn-block" onclick="findOrClear()">Построить маршрут</button>
+  </div>
 
   <script  type="text/javascript" charset="UTF-8" >
-/*
+
 var $mapContent = $('#map');
-var $graphContent = $('#canvas0');
+var $graphContent = $('#graph');
+
+var route;
 
 $(document).ready(function(){
-    $('#canvas0').hide();
-    alert('asd');
-});*/
+    $graphContent.hide();
+});
+
+function showAllGraphs() {
+  $('.graph').height('25%');
+  $('#address').hide();
+  $('#map').hide();
+  $('#graph').off();
+
+  $('#graph').click({id: 0}, selectGraph);
+  $('#graph1').click({id: 1}, selectGraph);
+  $('#graph2').click({id: 2}, selectGraph);
+  $('#graph3').click({id: 3}, selectGraph);
+}
+
+function selectGraph(id) {
+  id = id.data.id;
+  //console.log(id.data.id);
+
+  // black fucking magic (look away kids and never do it like this) //
+
+  if (id != 0) {
+    var $temp = $('#graph');
+    $('#graph' + id).attr('id', 'graph');  
+    $temp.attr('id', 'graph'+id);
+  }
+
+  $('#graph').css('top', '70%');
+  $('#graph1').css('top', '50%');
+  $('#graph2').css('top', '25%');
+  $('#graph3').css('top', '0%');
+
+  clearGraphs();
+  drawGraphs(id);
+
+  ////////////////////////////////////////////////////////////////////
+
+  $('.graph').height('0%');
+  $('#graph').height('28%');
+  $('#address').show();
+  $('#map').show();
+  $('.graph').off();
+  $('#graph').click("showGraphs", showAllGraphs);
+}
 
 /**
  * Calculates and displays a car route from the Brandenburg Gate in the centre of Berlin
@@ -68,14 +114,25 @@ function calculateRouteFromAtoB (platform, routeCoords) {
     maneuverattributes: 'direction,action',
     waypoint0: routeCoords[0], 
     waypoint1: routeCoords[1], 
-    alternatives: 9,
+    alternatives: 3,
   };
 
 
-/*
-  $mapContent.height('68%');
+
+  $mapContent.animate({
+    height: '68%'
+  }, 1000, function () {
+
+  });
+  
   $graphContent.show();
-  */
+  $graphContent.animate({
+    height: '28%',
+    top: '70%'
+  }, 1000, function () {
+
+  });
+
   router.calculateRoute(
     routeRequestParams,
     onSuccess,
@@ -88,22 +145,34 @@ function calculateRouteFromAtoB (platform, routeCoords) {
  *
  * see: http://developer.here.com/rest-apis/documentation/routing/topics/resource-type-calculate-route.html
  */
+function clearGraphs() {
+  removeObjectById('route');
+}
+
+function drawGraphs(id = 0) {
+  for (i = 0; i < route.length; i++) {
+    if (i == id) {
+      continue;
+    }
+    addRouteShapeToMap(route[i], false);
+  
+  }
+
+  addRouteShapeToMap(route[id], true);
+}
+
 function onSuccess(result) {
-  var route = result.response.route;
+  route = result.response.route;
+
   route.forEach(function(item, i, arr) {
     var coords = transformCoordinates(route[i].shape);
     var canvas = document.getElementById('canvas' + i);
     if (canvas != null) {
-      drawAltitudeGraph(coords, route[i].summary.distance, canvas.getContext('2d'));  
+      drawAltitudeGraph(coords, route[i].summary.distance, canvas.getContext('2d'), i==0);  
     }
   });
-  
-  if (route.length > 1) {
-    for (i = 1; i < route.length; i++) {
-      addRouteShapeToMap(route[i], false);
-    }
-  }
-  addRouteShapeToMap(route[0], true);
+
+  drawGraphs();
   //addManueversToMap(route);
 
 }
@@ -111,8 +180,8 @@ function onSuccess(result) {
 function findOrClear() {
   onClose();
   tapCounter = 2;
-  geocode(platform, document.getElementById('startText').value);
-  geocode(platform, document.getElementById('endText').value);
+  geocode(platform, document.getElementById('startText').value + ' Ставрополь');
+  geocode(platform, document.getElementById('endText').value + ' Ставрополь');
 
 }
 
@@ -130,6 +199,19 @@ function onClose() {
   //document.getElementById('map').style="position:absolute; width:99%; height:99%; z-index:90; background:grey"
   tapCounter = 0;
   routeCoords = [];
+
+  $mapContent.animate({
+    height: '100%'
+  }, 1000, function () {
+
+  });
+  
+  $('#graph').animate({
+    height: '0%',
+    top: '100%'
+  }, 1000, function () {
+    $('#graph').show();
+  });
 }
 
 /**
@@ -149,7 +231,8 @@ var platform = new H.service.Platform({
 var pixelRatio = window.devicePixelRatio || 1;
 var defaultLayers = platform.createDefaultLayers({
   tileSize: pixelRatio === 1 ? 256 : 512,
-  ppi: pixelRatio === 1 ? undefined : 320
+  ppi: pixelRatio === 1 ? undefined : 320,
+  lg: 'rus'
 });
 
 //Step 2: initialize a map - this map is centered over Berlin
@@ -157,7 +240,8 @@ var map = new H.Map(mapContainer,
   defaultLayers.normal.map,{
   center: {lat:45.05, lng:41.95},
   zoom: 12,
-  pixelRatio: pixelRatio
+  pixelRatio: pixelRatio,
+  lg:'CHI',
 });
 
 var tapCounter = 0;
@@ -190,8 +274,9 @@ map.addEventListener('dbltap', function (evt) {
 
 //Step 3: make the map interactive
 var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+behavior.disable(H.mapevents.Behavior.DBLTAPZOOM);
 // Create the default UI components
-var ui = H.ui.UI.createDefault(map, defaultLayers);
+var ui = H.ui.UI.createDefault(map, defaultLayers, 'ru-RU');
 
 function addRouteShapeToMap(route, main){
   var lineString = new H.geo.LineString(),
@@ -210,7 +295,7 @@ function addRouteShapeToMap(route, main){
         strokeColor: 'rgba(0, 128, 255, 0.8)'
       }
     });
-    console.log(route.shape[route.shape.length-1]);
+    //console.log(route.shape[route.shape.length-1]);
     startPoint = route.shape[0].split(',').map(x => parseFloat(x));
     endPoint = route.shape[route.shape.length-1].split(',').map(x => parseFloat(x));
     
@@ -227,7 +312,8 @@ function addRouteShapeToMap(route, main){
   // Add the polyline to the map
   map.addObject(polyline);
   // And zoom to its bounding rectangle
-  map.setViewBounds(polyline.getBounds(), true);
+  var bounds = polyline.getBounds();
+  //map.setViewBounds(bounds, true);
 }
 
 function geocode(platform, text) {
@@ -251,7 +337,7 @@ function onGeocodeSuccess(result) {
   * A representitive styling can be found the full JS + HTML code of this example
   * in the functions below:
   */
-  console.log(locations);
+  //console.log(locations);
   var loc = locations[0].location.displayPosition;
   routeCoords.push([loc.latitude, loc.longitude]);
   var marker = new H.map.Marker({lat:loc.latitude, lng:loc.longitude});
@@ -286,13 +372,18 @@ function transformCoordinates(coordinates){
   .map(val => ({'latitude': val[0], 'longitude': val[1]}));
 }
 
-function drawAltitudeGraph(coordinates, distance, canvas){
+function drawAltitudeGraph(coordinates, distance, canvas, main){
   var request = {'locations': coordinates};
   axios.post('https://api.open-elevation.com/api/v1/lookup', request)
     .then(function (response) {
       var data = response.data.results.map(coord => ({'alt': coord.elevation}));
       drawGraph(canvas, data, distance);
-      console.log('redraw');
+      //console.log('redraw');
+
+      if (main) {
+        $('#anim').hide();
+        $('#graph').click("showGraphs", showAllGraphs);
+      }
       //document.getElementById('map').style="position:absolute; width:99%; height:70%; z-index:10;";
     })
     .catch(function (error) {

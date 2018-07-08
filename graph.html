@@ -3,6 +3,7 @@
 
 <head>
 	<title>Line Styles</title>
+	<meta charset="UTF-8">
 	<script src="Chart.bundle.min.js"></script>
 	<script src="drawGraph.js"></script>
 <!--	<script src="../../utils.js"></script> -->
@@ -16,7 +17,7 @@
 </head>
 
 <body>
-	<div style="width:50%;">
+	<div style="width:50%; height:300px;">
 		<canvas id="canvas"></canvas>
 	</div>
 
@@ -109,7 +110,7 @@
 			window.myLine = new Chart(ctx, config);
 		};*/
 
-		drawGraph([{alt: 15}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}], 1500);
+		drawGraph(document.getElementById('canvas').getContext('2d'), [{alt: 15}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}, {alt: 10}, {alt: 20}, {alt: 30}, {alt: 40}, {alt: 15}, {alt: 25}], 3000);
 
 		
 	</script>

@@ -15,6 +15,7 @@ function drawGraph(canvas, data, distance) {
 	var min = 10000;
 	var max = -10000;
 	var lastAlt = 0;
+	var difficulty = 0;
 	data.forEach(function(item, i, arr) {
 		//altData.push(item.alt);
 		labels.push((i / (data.length - 1) * distance).toFixed(0));
@@ -26,6 +27,9 @@ function drawGraph(canvas, data, distance) {
 		}
 		if (i > 0) {
 			var angle = Math.atan2(item.alt - lastAlt, distance / data.length);
+			if (angle > 0) {
+				difficulty += angle * distance / data.length;
+			}
 			colors.push(Math.abs(angle) > .02 ? (angle >= 0 ? 1 : -1) : 0);
 		}
 		lastAlt = item.alt;
@@ -83,6 +87,9 @@ function drawGraph(canvas, data, distance) {
 		highScale -= lowScale;
 		lowScale = 0;
 	}
+
+	lowScale = Math.floor(lowScale / 100) * 100;
+	highScale = Math.ceil(highScale / 100) * 100;
 
 	var chart = new Chart(ctx, {
 	    // The type of chart we want to create
@@ -145,7 +152,7 @@ function drawGraph(canvas, data, distance) {
 	    			},
 	    			scaleLabel: {
 		    			display: true,
-		    			labelString: 'Distance, m',
+		    			labelString: 'Distance, m (difficulty = ' + difficulty + ')',
 		    			fontStyle: 'bold',
 		    			fontSize: 16
 		    		}
